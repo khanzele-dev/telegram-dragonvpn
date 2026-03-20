@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+enum PromoCodeStatus {
+  unused
+  used
+  expired
+}
+
+model User {
+  id                  String         @id @default(uuid())
+  telegramId          BigInt         @unique
+  username            String?
+  referralCode        String         @unique
+  didBlock            Boolean        @default(false)
+  createdAt           DateTime       @default(now())
+  subscriptions       Subscription[]
+  payments            Payment[]
+  invitedReferrals    Referral[]     @relation("Inviter")
+  usedReferral        Referral?      @relation("Invited")
+  purchasedPromoCodes PromoCode[]    @relation("PromoCodePurchaser")
+  redeemedPromoCodes  PromoCode[]    @relation("PromoCodeRedeemer")
+}
+
+model Subscription {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  planId    String
+  plan      Plan       @relation(fields: [planId], references: [id])
+  payment   Payment?
+  promoCode PromoCode?
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime   @default(now())
+}
+
+model Plan {
+  id            String         @id @default(uuid())
+  name          String
+  durationDays  Int
+  price         Int
+  isActive      Boolean        @default(true)
+  subscriptions Subscription[]
+  promoCodes    PromoCode[]
+}
+
+model Referral {
+  id         String   @id @default(uuid())
+  inviterId  String
+  inviter    User     @relation("Inviter", fields: [inviterId], references: [id])
+  invitedId  String   @unique
+  invited    User     @relation("Invited", fields: [invitedId], references: [id])
+  rewardDays Int
+  createdAt  DateTime @default(now())
+}
+
+model Payment {
+  id                String        @id @default(uuid())
+  userId            String
+  user              User          @relation(fields: [userId], references: [id])
+  amount            Int
+  currency          String        @default("USD")
+  status            PaymentStatus @default(pending)
+  provider          String
+  providerPaymentId String?
+  subscriptionId    String?       @unique
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
+  promoCodeId       String?       @unique
+  promoCode         PromoCode?    @relation(fields: [promoCodeId], references: [id])
+  createdAt         DateTime      @default(now())
+}
+
+model PromoCode {
+  id             String          @id @default(uuid())
+  code           String          @unique
+  planId         String
+  plan           Plan            @relation(fields: [planId], references: [id])
+  purchasedById  String
+  purchasedBy    User            @relation("PromoCodePurchaser", fields: [purchasedById], references: [id])
+  redeemedById   String?
+  redeemedBy     User?           @relation("PromoCodeRedeemer", fields: [redeemedById], references: [id])
+  status         PromoCodeStatus @default(unused)
+  payment        Payment?
+  subscriptionId String?         @unique
+  subscription   Subscription?   @relation(fields: [subscriptionId], references: [id])
+  expiresAt      DateTime?
+  redeemedAt     DateTime?
+  createdAt      DateTime        @default(now())
+}
