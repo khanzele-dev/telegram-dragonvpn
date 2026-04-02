@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { commands } from "./config";
-import { MyContext, MyConversationContext } from "./types";
+import { MyContext, MyConversationContext, SessionData } from "./types";
 import { initialSession } from "./shared/session";
 import { setDidBlock } from "./services/userService";
 import { callbackHandler } from "./handlers/callback";
@@ -17,6 +17,7 @@ import {
   createPlanConversation,
   editPlanConversation,
 } from "./handlers/conversation/planConversations";
+import { promoCodeConversation } from "./handlers/conversation/promoCodeConversation";
 
 async function main() {
   await initializeDatabase();
@@ -28,8 +29,8 @@ async function main() {
   bot.use(
     session({
       initial: initialSession,
-      // @ts-ignore
-      storage: freeStorage<ISessionData>(bot.token),
+      // @ts-ignore – freeStorage readAllKeys() signature differs from StorageAdapter
+      storage: freeStorage<SessionData>(bot.token),
     }),
   );
 
@@ -40,6 +41,7 @@ async function main() {
   bot.use(createConversation(editPlanConversation));
   bot.use(createConversation(broadcastConversation));
   bot.use(createConversation(createPlanConversation));
+  bot.use(createConversation(promoCodeConversation));
 
   bot.use(mainMenu);
   bot.use(adminMenu);
