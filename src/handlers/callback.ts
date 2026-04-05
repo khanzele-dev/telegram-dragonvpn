@@ -45,9 +45,12 @@ export const callbackHandler = async (ctx: MyContext) => {
           .text("📺 Android TV", "instructions:androidtv")
           .row()
           .text("⬅️ Назад", "back_to_menu");
-        await ctx.editMessageText("📃 Выберите устройство для просмотра инструкции:", {
-          reply_markup: instructionsKeyboard,
-        });
+        await ctx.editMessageText(
+          "📃 Выберите устройство для просмотра инструкции:",
+          {
+            reply_markup: instructionsKeyboard,
+          },
+        );
       } else {
         const text = instructionTexts[platform];
         if (text) {
@@ -83,7 +86,10 @@ export const callbackHandler = async (ctx: MyContext) => {
             show_alert: true,
           });
         } else {
-          await ctx.deleteMessage();
+          await ctx.editMessageText(
+            `👨‍💻 Ваш личный кабинет | ID: ${ctx.from!.id}\n\n⚡️ Мои VPN: 0\n\n🔻 Выберите действие ниже:`,
+            { reply_markup: mainMenu },
+          );
           await ctx.answerCallbackQuery();
         }
         break;
