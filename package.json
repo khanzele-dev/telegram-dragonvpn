@@ -16,6 +16,7 @@
     "@grammyjs/storage-free": "^2.5.1",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
+    "argon2": "^0.44.0",
     "dotenv": "^17.3.1",
     "grammy": "^1.40.1",
     "nodemon": "^3.1.14",
