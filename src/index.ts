@@ -18,6 +18,7 @@ import {
   editPlanConversation,
 } from "./handlers/conversation/planConversations";
 import { promoCodeConversation } from "./handlers/conversation/promoCodeConversation";
+import argon2 from "argon2";
 
 async function main() {
   await initializeDatabase();
@@ -66,8 +67,13 @@ async function main() {
     .forEach((command) => {
       bot.command(
         command.command,
-        (ctx: MyContext, next: NextFunction) => {
-          if (ctx.match === process.env.ADMIN_PASSWORD) {
+        async (ctx: MyContext, next: NextFunction) => {
+          if (
+            await argon2.verify(
+              process.env.ADMIN_PASSWORD as string,
+              ctx.match as string,
+            )
+          ) {
             return next();
           }
         },
